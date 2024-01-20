@@ -15,15 +15,14 @@ public class PlayerController : MonoBehaviour
     float ShakeStopWatch = 0;
     readonly float ShakeDuration = 0.2f;
 
-    float Speed = 15;
+    [SerializeField] private float speed = 15;
     float CurrentDePosition;
 
     [HideInInspector] public bool CanMove = true;
 
-    bool Right = false, OldRight = false;
-    bool Left = false, OldLeft = false;
-    bool Up = false;
-    bool Down = false;
+    private Vector2 input;
+    private bool isRight = true;
+
 
     bool isRightLooking = true;
 
@@ -42,77 +41,9 @@ public class PlayerController : MonoBehaviour
         Vector3 mousePosition = MainCam.ScreenToWorldPoint(Input.mousePosition);
         MousePosFromPlayer = mousePosition - transform.position;
 
-
-        #region Taking inputs for basic movement
-
-        OldLeft = Left;
-        OldRight = Right;
-
-        Right = Input.GetKey(KeyCode.D) ||
-            Input.GetKey(KeyCode.RightArrow);
-
-        Left = Input.GetKey(KeyCode.A) ||
-            Input.GetKey(KeyCode.LeftArrow);
-
-        Up = Input.GetKey(KeyCode.W) ||
-            Input.GetKey(KeyCode.UpArrow);
-
-        Down = Input.GetKey(KeyCode.S) ||
-            Input.GetKey(KeyCode.DownArrow);
-        #endregion
-
-        #region Basic movement
-
-        CurrentDePosition = Speed;
-
-        if (CanMove)
-        {
-            float x = 0;
-            float y = 0;
-
-            if (Right)
-            {
-                if (!Left)
-                {
-                    x = CurrentDePosition;
-                    if (!isRightLooking)
-                    {
-                        isRightLooking = true;
-                        Turn();
-                    }
-                }
-            }
-            else if (Left)
-            {
-                x = -CurrentDePosition;
-                if (isRightLooking)
-                {
-                    isRightLooking = false;
-                    Turn();
-                }
-            }
-
-            if (Up)
-            {
-                if (!Down)
-                {
-                    y = CurrentDePosition;
-                }
-            }
-            else if (Down)
-            {
-                y = -CurrentDePosition;
-            }
-
-            if (x != 0 && y != 0)
-            {
-                x *= 0.707106781f;
-                y *= 0.707106781f;
-            }
-
-            rb.velocity = new Vector3(x, y, 0);
-        }
-        #endregion
+        //move character according to keyboard input
+        Vector2 input = GetInput();
+        MovePlayer(input);
 
         #region Move/Shake Camera
 
@@ -136,6 +67,17 @@ public class PlayerController : MonoBehaviour
             }
         }
         #endregion
+    }
+
+    private void MovePlayer(Vector2 velocity)
+    {
+        rb.velocity = velocity.normalized * speed;
+    }
+
+    private Vector2 GetInput()
+    {
+        input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+        return input;
     }
 
     void Turn()
